@@ -6,6 +6,7 @@ from agent import run_agent
 from dotenv import load_dotenv
 import uvicorn
 import os
+from shared_store import url_time, BASE64_STORE
 import time
 
 load_dotenv()
@@ -45,7 +46,12 @@ async def solve(request: Request, background_tasks: BackgroundTasks):
     
     if secret != SECRET:
         raise HTTPException(status_code=403, detail="Invalid secret")
+    url_time.clear() 
+    BASE64_STORE.clear()  
     print("Verified starting the task...")
+    os.environ["url"] = url
+    os.environ["offset"] = "0"
+    url_time[url] = time.time()
     background_tasks.add_task(run_agent, url)
 
     return JSONResponse(status_code=200, content={"status": "ok"})
